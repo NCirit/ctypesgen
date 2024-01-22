@@ -324,6 +324,14 @@ def main(givenargs=None):
         help="Run ctypesgen with specified debug level (also applies to yacc parser)",
     )
 
+    parser.add_argument(
+        "--preprocessed",
+        dest="preprocessed",
+        action="store_true",
+        default=False,
+        help="Skips preprocessing step."
+    )
+
     parser.set_defaults(**core_options.default_values)
     args = parser.parse_args(givenargs)
 

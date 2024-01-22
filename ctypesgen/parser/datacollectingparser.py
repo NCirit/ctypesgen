@@ -69,11 +69,17 @@ class DataCollectingParser(ctypesparser.CtypesParser, CtypesTypeVisitor):
 
     def parse(self):
         fd, fname = mkstemp(suffix=".h")
+
         with os.fdopen(fd, "w") as f:
-            for header in self.options.other_headers:
-                f.write("#include <%s>\n" % header)
-            for header in self.headers:
-                f.write('#include "%s"\n' % os.path.abspath(header))
+            if self.options.preprocessed:
+                for header in self.headers:
+                    with open(header, "r") as fl:
+                        f.write(fl.read())
+            else:
+                for header in self.options.other_headers:
+                    f.write("#include <%s>\n" % header)
+                for header in self.headers:
+                    f.write('#include "%s"\n' % os.path.abspath(header))
             f.flush()
         try:
             super(DataCollectingParser, self).parse(fname, self.options.debug_level)

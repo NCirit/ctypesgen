@@ -86,9 +86,7 @@ class PreprocessorParser(object):
         self.options = options
         self.cparser = cparser  # An instance of CParser
 
-    def parse(self, filename):
-        """Parse a file and save its output"""
-
+    def preprocess(self, filename):
         cmd = self.options.cpp
 
         # Legacy behaviour is to implicitly undefine '__GNUC__'
@@ -145,6 +143,18 @@ class PreprocessorParser(object):
         for line in pperr.split("\n"):
             if line:
                 self.cparser.handle_pp_error(line)
+        
+        return ppout
+
+    def parse(self, filename):
+        """Parse a file and save its output"""
+        
+        preprocessed_contents = ""
+        if not self.options.preprocessed:
+            preprocessed_contents = self.preprocess(filename)
+        else:
+            with open(filename, "r") as fl:
+                preprocessed_contents = fl.read()
 
         # We separate lines to two groups: directives and c-source.  Note that
         # #pragma directives actually belong to the source category for this.
@@ -158,7 +168,7 @@ class PreprocessorParser(object):
 
         first_token_reg = re.compile(r"^#\s*([^ ]+)($|\s)")
 
-        for line in ppout.split("\n"):
+        for line in preprocessed_contents.split("\n"):
             line += "\n"
             search = first_token_reg.match(line)
             hash_token = search.group(1) if search else None
